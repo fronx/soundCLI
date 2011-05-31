@@ -33,7 +33,7 @@ module AccessToken
 					# start over
 					$stderr.puts "Cannot request access token without code.\nContinuing with default login."
 					Settings::set_auth_type(:login)
-					raise "retry" 
+					new
 				end
 				params = [
 					"grant_type=authorization_code",
@@ -53,10 +53,9 @@ module AccessToken
 					"username=#{username.chomp}",
 					"password=#{password.chomp}"
 				]
-			end
-
-		rescue
-			retry
+			else
+			  raise "bad auth_type: #{Settings::auth_type}"
+		  end
 		end
 
 		return AccessToken::post(params)

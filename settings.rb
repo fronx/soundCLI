@@ -10,40 +10,35 @@ module Settings
 	API_URI_SSL   = "https://api.soundcloud.com"
 	API_URI       = "http://api.soundcloud.com"
 
-	@@config = {}
-	@@auth_code = false
-		# TODO: read from config
-	@@auth_type = :login #:authentication_code
+	@config = {}
 
-	def Settings::all
-		return @@config
+	def self.all
+		@config
 	end
 
-	def Settings::set_auth_type(v)
-		@@auth_type = v
+	def self.auth_code_available
+		!!@auth_code
 	end
 
-	def Settings::auth_type
-		return @@auth_type
-	end
+  def self.auth_type
+    all['code'] ? :authentication_code : :login
+  end
 
-	def Settings::auth_code_available
-		return @@auth_code
-	end
-
-	def Settings::init(arguments)
+	def self.init(arguments)
 		if arguments
 			# TODO: build config from arguments
 		end
-		$stderr.puts "No config file found or error parsing it. Ignoring." unless Settings::parse_config
+		unless parse_config
+		  $stderr.puts "No config file found or error parsing it. Ignoring."
+	  end
 
-		return true if Settings::auth_type == :login
+		return true if all['auth_type'] == 'login'
 
 		# check if an auth code exists
-		if Settings::all.has_key? 'code'
-			@@auth_code = true
+		if all.has_key? 'code'
+			@auth_code = true
 		else
-			print <<EOF
+			print << %Q{
 You did not specify your authorization code.
 If you don't have one, you should first authorize soundCLI.
 
@@ -56,21 +51,20 @@ add to soundcli.conf in $XDG_CONFIG_HOME.
 If you choose not to connect soundCLI with your soundcloud
 account, you may want to change the preferred authentication
 type in your configuration file to 'login'.
-EOF
+}
 		end
 	end
 
-	def Settings::parse_config
+	def self.parse_config
 		config_file = "#{PRG_NAME.downcase}.conf"
-		config_path = ENV['XDG_CONFIG_HOME'] or ENV['HOME']+'/.config'
-		config_path = config_path + "/#{PRG_NAME.downcase}"
+		config_path = ENV['XDG_CONFIG_HOME'] || (ENV['HOME']+'/.config')
 		cf = "#{config_path}/#{config_file}"
-		@@config['path'] = config_path
+		@config['path'] = config_path
 
 		return false unless File.exists? cf
 
 		begin
-			@@config.merge!(JSON.parse(File.read(cf)))
+			@config.merge!(JSON.parse(File.read(cf)))
 			return true
 		rescue
 			$stderr.puts "Your configuration file contains errors."

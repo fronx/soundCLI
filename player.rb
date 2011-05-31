@@ -8,7 +8,6 @@ class Player
 		Gst.init
 		# create the playbin
 		@playbin = Gst::ElementFactory.make("playbin2")
-
 		# TODO: buffer still runs out
 		@playbin.set_property("buffer-size", 512_000)
 		@playbin.set_property("buffer-duration", 5_000_000_000)
@@ -17,6 +16,7 @@ class Player
 
 		#watch the bus for messages
 		bus = @playbin.bus
+	  
 		bus.add_watch do |bus, message|
 			handle_bus_message(message)
 		end
