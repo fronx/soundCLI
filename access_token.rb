@@ -4,25 +4,24 @@ require 'uri'
 require "#{File.dirname(__FILE__)}/settings"
 
 module AccessToken
-	def AccessToken::auth_file
+	def self.auth_file
 		return Settings::all['path']+'/auth'
 	end
 
-	def AccessToken::refresh
-		token = AccessToken::latest
+	def self.refresh
+		token = latest
 		$stderr.puts "There is no token to refresh." and return false unless token
 		params = ['grant_type=refresh_token',
 			        "refresh_token=#{token['refresh_token']}"]
-		return AccessToken::post(params)
+		post(params)
 	end
 
-	def AccessToken::latest
-		f = AccessToken::auth_file
-		return JSON.parse(File.read(f)) if File.exists? f
-		return nil
+	def self.latest
+		f = auth_file
+		JSON.parse(File.read(f)) if File.exists?(f)
 	end
 
-	def AccessToken::new
+	def self.new
 		# If authentication_code is the preferred
 		# authentication method, but no code has been specified,
 		# retry authentication with user credentials
@@ -58,10 +57,10 @@ module AccessToken
 		  end
 		end
 
-		return AccessToken::post(params)
+		post(params)
 	end
 
-	def AccessToken::post(params)
+	def self.post(params)
 		c = Curl::Easy.new(Settings::TOKEN_URI)
 		default_params = [
 			"client_id=#{Settings::CLIENT_ID}",
@@ -73,11 +72,11 @@ module AccessToken
 		begin
 			c.http_post(params)
 			auth = c.body_str
-			File.open(AccessToken::auth_file, 'w') {|f| f.write(auth) } if auth
-			return JSON.parse(auth)
+			File.open(auth_file, 'w') {|f| f.write(auth) } if auth
+			JSON.parse(auth)
 		rescue
 			$stderr.puts "Could not post/save access token."
-			return nil
+			nil
 		end
 	end
 

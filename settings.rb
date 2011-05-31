@@ -62,10 +62,10 @@ type in your configuration file to 'login'.
 		@config['path'] = config_path
 
 		# TODO: read from config instead
-		@@config['verbose'] = false
-		@@config['buffer-size'] = 512_000
-		@@config['comment_width'] = 50
-		@@config['comment_indent_width'] = 4
+		@config['verbose'] = false
+		@config['buffer-size'] = 512_000
+		@config['comment_width'] = 50
+		@config['comment_indent_width'] = 4
 
 		return false unless File.exists? cf
 
